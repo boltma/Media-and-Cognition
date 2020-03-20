@@ -3,10 +3,10 @@
 
 import numpy as np
 
+
 class BatchNorm(object):
 
     def __init__(self, in_feature, alpha=0.9):
-
         # You shouldn't need to edit anything in init
 
         self.alpha = alpha
@@ -49,34 +49,22 @@ class BatchNorm(object):
             self.mean = None
             self.var = None
             self.norm = None
-            # ToDo:
-            # Hint: use self.gamma, self.x, self.running_mean,self.running_var, self.eps,self.beta and np.sqrt() to calculate self.out
-            # Hint: Please refer to https://kevinzakka.github.io/2016/09/14/batch_normalization/
-            # self.out = ???
-            # return self.out
+            self.out = (self.x - self.running_mean) / np.sqrt(self.running_var + self.eps) * self.gamma + self.beta
+            return self.out
 
         # Training mode
 
-        self.mean = np.mean(self.x, axis = 0)
-        self.var = np.var(self.x, axis = 0)
+        self.mean = np.mean(self.x, axis=0)
+        self.var = np.var(self.x, axis=0)
 
-        # ToDo:
-        # Hint: use self.x, self.mean,self.var, self.eps and np.sqrt() to calculate self.norm
-        # Hint: use self.gamma, self.norm and self.beta to calculate self.out
-        # Hint: Please refer to https://kevinzakka.github.io/2016/09/14/batch_normalization/
-        # self.norm = ???
-        # self.out = ???
+        self.norm = (self.x - self.mean) / np.sqrt(self.var + self.eps)
+        self.out = self.norm * self.gamma + self.beta
 
         # update running batch statistics
         self.running_mean = self.running_mean * self.alpha + self.mean * (1 - self.alpha)
+        self.running_var = self.running_var * self.alpha + self.var * (1 - self.alpha)
 
-        # ToDo:
-        # Hint: update self.running_var similar to self.running_mean
-        # self.running_var = ???
-        
-        # return self.out
-        raise NotImplemented
-
+        return self.out
 
     def backward(self, delta):
         """
@@ -85,19 +73,16 @@ class BatchNorm(object):
         Return:
             out (np.array): (batch size, in feature)
         """
-        m = self.x.shape[0] # batch size
-        dgamma = np.sum(delta * self.norm, axis = 0)
-        dbeta = np.sum(delta, axis = 0)
+        m = self.x.shape[0]  # batch size
+        dgamma = np.sum(delta * self.norm, axis=0)
+        dbeta = np.sum(delta, axis=0)
         self.dgamma[0] = dgamma
         self.dbeta[0] = dbeta
 
         dx_hat = self.gamma * delta
-        dvar = np.sum(dx_hat * (self.x - self.mean), axis=0) * (-1 / 2) * (self.var + self.eps)**(-3 / 2)
-        dmean = -np.sum(dx_hat, axis = 0) / np.sqrt(self.var + self.eps) - 2 / m * dvar * np.sum(self.x - self.mean, axis=0)
+        dvar = np.sum(dx_hat * (self.x - self.mean), axis=0) * (-1 / 2) * (self.var + self.eps) ** (-3 / 2)
+        dmean = -np.sum(dx_hat, axis=0) / np.sqrt(self.var + self.eps) - 2 / m * dvar * np.sum(self.x - self.mean,
+                                                                                               axis=0)
 
-        # ToDo:
-        # Hint: use dx_hat,self.var, self.eps, dvar, batch size (m), self.x£¬ self.mean, dmean and np.sqrt() to calculate dx
-        # Hint: please refer to https://kevinzakka.github.io/2016/09/14/batch_normalization/
-        # dx = ???
-        # return dx
-        raise NotImplemented
+        dx = dx_hat / np.sqrt(self.var + self.eps) + dvar * 2.0 * (self.x - self.mean) / m + dmean / m
+        return dx

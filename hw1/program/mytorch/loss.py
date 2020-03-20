@@ -4,6 +4,7 @@
 import numpy as np
 import os
 
+
 # The following Criterion class will be used again as the basis for a number
 # of loss functions (which are in the form of classes so that they can be
 # exchanged easily (it's how PyTorch and other ML libraries do it))
@@ -29,6 +30,7 @@ class Criterion(object):
     def derivative(self):
         raise NotImplemented
 
+
 class SoftmaxCrossEntropy(Criterion):
     """
     Softmax loss
@@ -50,21 +52,16 @@ class SoftmaxCrossEntropy(Criterion):
         self.labels = y
 
         # LogSumExp trick: please refer to https://www.xarg.org/2016/06/the-log-sum-exp-trick-in-machine-learning/
-        
-        maxx = np.max(x, axis = 1)
+
+        maxx = np.max(x, axis=1)
         self.sm = maxx + np.log(np.sum(np.exp(x - maxx[:, np.newaxis]), axis=1))
-        
-        # ToDo:
-        # Hint: use self.logits, self.labels, self.sm, and np.sum(???, axis = 1)
-        # return ???
-        raise NotImplemented
+
+        self.loss = self.sm - np.sum(np.multiply(self.logits, self.labels), axis=1)
+        return self.loss
 
     def derivative(self):
         """
         Return:
             out (np.array): (batch size, 10)
         """
-        # ToDo:
-        # Hint: fill in self.logits and self.labels in the following sentence
-        #return (np.exp(???) / np.exp(self.sm)[:, np.newaxis]) - ???
-        raise NotImplemented
+        return (np.exp(self.logits) / np.exp(self.sm)[:, np.newaxis]) - self.labels

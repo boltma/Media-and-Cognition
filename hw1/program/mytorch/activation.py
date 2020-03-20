@@ -6,7 +6,6 @@ import os
 
 
 class Activation(object):
-
     """
     Interface for activation functions (non-linearities).
 
@@ -34,7 +33,6 @@ class Activation(object):
 
 
 class Identity(Activation):
-
     """
     Identity function (already implemented).
     """
@@ -53,7 +51,6 @@ class Identity(Activation):
 
 
 class Sigmoid(Activation):
-
     """
     Sigmoid non-linearity
     """
@@ -65,22 +62,14 @@ class Sigmoid(Activation):
         super(Sigmoid, self).__init__()
 
     def forward(self, x):
-        # ToDo:
-        # Might we need to store something before returning?
-        # self.state = ???
-        # Hint: You can use np.exp() function 
-        # return self.state
-        raise NotImplemented
+        self.state = 1.0 / (1.0 + np.exp(-x))
+        return self.state
 
     def derivative(self):
-        # ToDo:
-        # Maybe something we need later in here...
-        # return ???
-        # Maybe something we need later in here...
-        raise NotImplemented
+        return self.state * (1.0 - self.state)
+
 
 class Tanh(Activation):
-
     """
     Tanh non-linearity
     """
@@ -89,20 +78,14 @@ class Tanh(Activation):
         super(Tanh, self).__init__()
 
     def forward(self, x):
-        # ToDo:
-        # self.state = ???
-        # Hint: You can use np.exp() function 
-        # return self.state
-        raise NotImplemented
+        self.state = np.tanh(x)
+        return self.state
 
     def derivative(self):
-        # ToDo:
-        # return ???
-        raise NotImplemented
+        return 1.0 - self.state ** 2
 
 
 class ReLU(Activation):
-
     """
     ReLU non-linearity
     """
@@ -111,13 +94,8 @@ class ReLU(Activation):
         super(ReLU, self).__init__()
 
     def forward(self, x):
-        # ToDo:
-        # self.state = ???
-        # return self.state
-        raise NotImplemented
-
+        self.state = np.maximum(0, x)
+        return self.state
 
     def derivative(self):
-        # ToDo:
-        # return ???
-        raise NotImplemented
+        return 1.0 * (self.state > 0)
