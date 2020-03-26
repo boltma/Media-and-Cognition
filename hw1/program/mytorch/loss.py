@@ -64,4 +64,5 @@ class SoftmaxCrossEntropy(Criterion):
         Return:
             out (np.array): (batch size, 10)
         """
-        return (np.exp(self.logits) / np.exp(self.sm)[:, np.newaxis]) - self.labels
+        maxx = np.max(self.logits, axis=1)
+        return (np.exp(self.logits - maxx[:, np.newaxis]) / np.exp(self.sm - maxx)[:, np.newaxis]) - self.labels
