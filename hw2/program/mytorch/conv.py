@@ -19,7 +19,7 @@ class Conv1D():
             self.W = np.random.normal(0, 1.0, (out_channel, in_channel, kernel_size))
         else:
             self.W = weight_init_fn(out_channel, in_channel, kernel_size)
-        
+
         if bias_init_fn is None:
             self.b = np.zeros(out_channel)
         else:
@@ -44,25 +44,16 @@ class Conv1D():
         out_width = (self.width - self.kernel_size) // self.stride + 1
         self.out_width = out_width
         self.x = x
-        result = np.zeros(shape=[self.batch, self.out_channel, out_width])      # NOTE: do NOT use np.float32
-        
-        # ToDo:
-        #----------------------->
-        # Hint:
-        # Calculate the output of convolutional layer by using self.W[out_c], self.b[out_c], and x with appropriate matrix slicing
-        # Use the .sum() method of a array to get the sum of array elements 
-        # <---------------------
-        
-        # for n in range(self.batch):
-        #    for out_c in range(self.out_channel):
-        #        for out_pos in range(out_width):
-        #            result[n, out_c, out_pos] = ???
+        result = np.zeros(shape=[self.batch, self.out_channel, out_width])  # NOTE: do NOT use np.float32
 
-        #return result
+        for n in range(self.batch):
+            for out_c in range(self.out_channel):
+                for out_pos in range(out_width):
+                    result[n, out_c, out_pos] = \
+                        (self.x[n, :, self.stride * out_pos: self.stride * out_pos + self.kernel_size] *
+                         self.W[out_c]).sum() + self.b[out_c]
 
-        raise NotImplemented
-
-
+        return result
 
     def backward(self, delta):
         """
@@ -71,24 +62,18 @@ class Conv1D():
         Return:
             dx (np.array): (batch_size, in_channel, input_size)
         """
-        dx = np.zeros(shape=self.x.shape)   # NOTE: do NOT use np.float32, use np.float64 instead
- 
-        # ToDo:
-        #----------------------->
-        # Hint:
-        # Calculate the the gradients by filling self.kernel_size and self.stride in appropriate places (???)
-        # <---------------------
-        # for n in range(self.batch):
-        #    for out_c in range(self.out_channel):
-        #        for out_pos in range(self.out_width):
-        #            self.db[out_c] += delta[n, out_c, out_pos] * 1.0
-        #            self.dW[out_c] += delta[n, out_c, out_pos] * self.x[n, :, out_pos*???:out_pos*??? + ???]
-        #            dx[n, :, out_pos*???:out_pos*??? + ???] += delta[n, out_c, out_pos] * self.W[out_c]
+        dx = np.zeros(shape=self.x.shape)  # NOTE: do NOT use np.float32, use np.float64 instead
 
-        # return dx
+        for n in range(self.batch):
+            for out_c in range(self.out_channel):
+                for out_pos in range(self.out_width):
+                    self.db[out_c] += delta[n, out_c, out_pos] * 1.0
+                    self.dW[out_c] += delta[n, out_c, out_pos] * \
+                                      self.x[n, :, self.stride * out_pos: self.stride * out_pos + self.kernel_size]
+                    dx[n, :, self.stride * out_pos: self.stride * out_pos + self.kernel_size] += \
+                        delta[n, out_c, out_pos] * self.W[out_c]
 
-        raise NotImplemented
-
+        return dx
 
 
 class Flatten():
@@ -105,8 +90,8 @@ class Flatten():
         self.b, self.c, self.w = x.shape
 
         self.x = x
-        return x.reshape(x.shape[0], -1)    # (N, C, W) -> (N, C*W)
-        
+        return x.reshape(x.shape[0], -1)  # (N, C, W) -> (N, C*W)
+
     def backward(self, delta):
         """
         Argument:

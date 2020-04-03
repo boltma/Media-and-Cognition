@@ -32,18 +32,9 @@ class CNN_SimpleScanningMLP():
         return self.forward(x)
 
     def init_weights(self, weights):
-
-        # ToDo:
-        #----------------------->
-        # Hint:
-        # Load the weights for your CNN from the MLP Weights given
-        # weights[0], weights[1], weights[2] contain the weights for the three layers of the MLP
-        # Load them appropriately into the CNN
-        # <---------------------
-
         self.conv1.W = weights[0].reshape(8, 24, 8).transpose(2, 1, 0)
         self.conv2.W = weights[1].T.reshape(16, 8, 1)
-        self.conv3.W = weights[2].T.reshape(???, ???, ???)
+        self.conv3.W = weights[2].T.reshape(4, 16, 1)
 
     def forward(self, x):
         """
@@ -77,11 +68,11 @@ class CNN_SimpleScanningMLP():
 
 class CNN_DistributedScanningMLP():
     def __init__(self):
-        
+
         self.conv1 = Conv1D(24, 2, 2, 2)
         self.conv2 = Conv1D(2, 8, 2, 2)
         self.conv3 = Conv1D(8, 4, 2, 1)
-     
+
         self.layers = [
             self.conv1,
             ReLU(),
@@ -90,23 +81,15 @@ class CNN_DistributedScanningMLP():
             self.conv3,
             Flatten()
         ]
+
     def __call__(self, x):
         # Do not modify this method
         return self.forward(x)
 
     def init_weights(self, weights):
-        
-        # ToDo:
-        #----------------------->
-        # Hint:
-        # Load the weights for your CNN from the MLP Weights given
-        # weights[0], weights[1], weights[2] contain the weights for the three layers of the MLP
-        # Load them appropriately into the CNN
-        # <---------------------
-
         self.conv1.W = weights[0].reshape(8, 24, 8)[:2, :, :2].transpose(2, 1, 0)
         self.conv2.W = weights[1][:4, :8].reshape(2, 2, 8).transpose(2, 1, 0)
-        self.conv3.W = weights[2].reshape(???, ???, ???).transpose(2, 1, 0)
+        self.conv3.W = weights[2].reshape(2, 8, 4).transpose(2, 1, 0)
 
     def forward(self, x):
         """

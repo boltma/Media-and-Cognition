@@ -12,8 +12,8 @@ from activation import *
 from linear import *
 from conv import *
 
-class CNN(object):
 
+class CNN(object):
     """
     A simple convolutional neural network
 
@@ -55,36 +55,24 @@ class CNN(object):
         # the values in order to initialize them correctly
 
         self.convolutional_layers = []
-        self.convolutional_layers.append(Conv1D(num_input_channels,num_channels[0],kernel_sizes[0],strides[0],conv_weight_init_fn,bias_init_fn))
-        
-        # ToDo:
-        # Hint:
-        # Initializing the rest convolutional layers 
-        # by calling Conv1D() with apropriate initialization parameters.
-        
-        # for i in range(1, self.nlayers):
-        #    self.convolutional_layers.append(Conv1D(???))
+        self.convolutional_layers.append(
+            Conv1D(num_input_channels, num_channels[0], kernel_sizes[0], strides[0], conv_weight_init_fn, bias_init_fn))
 
+        for i in range(1, self.nlayers):
+            self.convolutional_layers.append(
+                Conv1D(num_channels[i - 1], num_channels[i], kernel_sizes[i], strides[i], conv_weight_init_fn,
+                       bias_init_fn))
 
         # The flatten layer will transform a two-dimensional matrix of features into a vector that can be fed into a fully connected layer.
         # The initialization of flatten layer has no parameter.
         self.flatten = Flatten()
-        
-        # ToDo:
-        #----------------------->
-        # Hint:
-        # Calling Linear() with apropriate initialization parameters.        
-        # As defined in  function "get_cnn_model" in runner.py,
-        # The input width of data is 128
-        # kernel_sizes for three convolutional layers are [5, 6, 2]
-        # strides for three convolutional layers are [1, 2, 2]
-        # out_channels for three convolutional layers are [56, 28, 14]
-        # calculate the output width of the third convolutional layer, output_width*output_channel is the input dimension (???) of the linear layer
-        # <---------------------
-        
-        
-        # self.linear_layer = Linear(???, num_linear_neurons, linear_weight_init_fn, bias_init_fn)
 
+        output_width = input_width
+        output_channel = num_channels[-1]
+        for i in range(self.nlayers):
+            output_width = (output_width - kernel_sizes[i]) // strides[i] + 1
+        self.linear_layer = Linear(output_width * output_channel, num_linear_neurons, linear_weight_init_fn,
+                                   bias_init_fn)
 
     def forward(self, x):
         """
@@ -94,17 +82,10 @@ class CNN(object):
             out (np.array): (batch_size, num_linear_neurons)
         """
 
-        # ToDo:
-        #----------------------->
-        # Iterate through each layer
-        # Hint:
-        # Calling the forward functions of convolutional layers and their acitivation funtions
-        # <---------------------
+        for i in range(self.nlayers):
+            x = self.convolutional_layers[i].forward(x)  # convolutional layer
+            x = self.activations[i](x)  # acitivation funtion
 
-        # for i in range(self.nlayers):
-        #    x = ???    # convolutional layer
-        #    x = ???    # acitivation funtion
-            
         x = self.flatten(x)
         x = self.linear_layer(x)
 
@@ -125,22 +106,14 @@ class CNN(object):
         self.loss = self.criterion(self.output, labels).sum()
         grad = self.criterion.derivative()
         grad = self.linear_layer.backward(grad)
- 
+
         grad = self.flatten.backward(grad)
-        
-        # ToDo:
-        #----------------------->
-        # Iterate through each layer in reverse order
-        # Hint:
-        # Calculating the gradation by calling the derivative of acitivation funtions and the backward functions of convolutional layers
-        # <---------------------
 
-        # for i in range(self.nlayers-1,-1,-1):
-        #    grad = ??? *grad    # acitivation funtion
-        #    grad = ???          # convolutional layer
-        
+        for i in range(self.nlayers - 1, -1, -1):
+            grad = self.activations[i].derivative() * grad  # acitivation funtion
+            grad = self.convolutional_layers[i].backward(grad)  # convolutional layer
+
         return grad
-
 
     def zero_grads(self):
         # Do not modify this method
@@ -157,11 +130,10 @@ class CNN(object):
             self.convolutional_layers[i].W = (self.convolutional_layers[i].W -
                                               self.lr * self.convolutional_layers[i].dW)
             self.convolutional_layers[i].b = (self.convolutional_layers[i].b -
-                                  self.lr * self.convolutional_layers[i].db)
+                                              self.lr * self.convolutional_layers[i].db)
 
         self.linear_layer.W = (self.linear_layer.W - self.lr * self.linear_layers.dW)
-        self.linear_layers.b = (self.linear_layers.b -  self.lr * self.linear_layers.db)
-
+        self.linear_layers.b = (self.linear_layers.b - self.lr * self.linear_layers.db)
 
     def __call__(self, x):
         # Do not modify this method

@@ -4,9 +4,9 @@
 import numpy as np
 import math
 
+
 class Linear():
     def __init__(self, in_feature, out_feature, weight_init_fn, bias_init_fn):
-
         """
         Argument:
             W (np.array): (in feature, out feature)
@@ -36,24 +36,20 @@ class Linear():
         """
         self.x = x
 
-        # ToDo: 
         self.out = x.dot(self.W) + self.b
         return self.out
-        # raise NotImplemented
 
     def backward(self, delta):
-
         """
         Argument:
             delta (np.array): (batch size, out feature)
         Return:
             out (np.array): (batch size, in feature)
         """
-        
-        self.db = np.dot(delta.T,np.ones(delta.shape[0])) / delta.shape[0]     # shape should be (1, out_features); divide batch_size to pass the auto_grader
 
-        # ToDo: 
-        self.dW = np.dot(self.x.T, delta) / delta.shape[0]       # divide batch_size to pass the auto_grader 
+        self.db = np.dot(delta.T, np.ones(delta.shape[0])) / delta.shape[
+            0]  # shape should be (1, out_features); divide batch_size to pass the auto_grader
+
+        self.dW = np.dot(self.x.T, delta) / delta.shape[0]  # divide batch_size to pass the auto_grader
         dx = np.dot(delta, self.W.T)
         return dx
-        # raise NotImplemented
