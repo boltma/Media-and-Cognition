@@ -62,7 +62,9 @@ class Sigmoid(Activation):
         super(Sigmoid, self).__init__()
 
     def forward(self, x):
-        self.state = 1.0 / (1.0 + np.exp(-x))
+        self.state = np.zeros_like(x)
+        self.state[x >= 0] = 1.0 / (1.0 + np.exp(-x[x >= 0]))
+        self.state[x < 0] = np.exp(x[x < 0]) / (1.0 + np.exp(x[x < 0]))
         return self.state
 
     def derivative(self):
