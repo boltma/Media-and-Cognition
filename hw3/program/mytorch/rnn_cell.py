@@ -1,9 +1,9 @@
 import numpy as np
 from activation import *
 
+
 class RNN_Cell(object):
     def __init__(self, input_size, hidden_size):
-
         self.input_size = input_size
         self.hidden_size = hidden_size
 
@@ -58,16 +58,8 @@ class RNN_Cell(object):
         h_prime : (batch_size, hidden_size)
         """
 
-        # ToDo:
-        #----------------------->
-        # Hint: Please see Equation 1 in hw3_readme.pdf
-        # Understand then uncomment this code, and fill in the blanks marked with '???'
-        # <---------------------
-
-        # h_prime = self.activation(x.dot(???) + self.b_ih + h.dot(self.W_hh.T) + ???)
-        # return h_prime
-
-        raise NotImplementedError
+        h_prime = self.activation(x.dot(self.W_ih.T) + self.b_ih + h.dot(self.W_hh.T) + self.b_hh)
+        return h_prime
 
     def backward(self, delta, h, h_prev_l, h_prev_t):
         """
@@ -93,23 +85,15 @@ class RNN_Cell(object):
         # have modified the tanh activation function to accept an optionally input.
         dz = self.activation.derivative(state=h) * delta
 
-        # ToDo:
-        #----------------------->
-        #  Understand then uncomment this code, and fill in the blanks marked with '???'
-        # <---------------------
-
-
         # 1) Compute the averaged gradients of the weights and biases
-        # self.dW_ih += dz.T.dot(h_prev_l) / batch_size
-        # self.dW_hh += dz.T.dot(???) / batch_size
-        # self.db_ih += dz.mean(0)
-        # self.db_hh += dz.mean(0)
+        self.dW_ih += dz.T.dot(h_prev_l) / batch_size
+        self.dW_hh += dz.T.dot(h_prev_t) / batch_size
+        self.db_ih += dz.mean(0)
+        self.db_hh += dz.mean(0)
 
         # 2) Compute dx, dh
-        # dx = dz.dot(self.W_ih)
-        # dh = dz.dot(???)
+        dx = dz.dot(self.W_ih)
+        dh = dz.dot(self.W_hh)
 
         # 3) Return dx, dh
-        # return dx, dh
-
-        raise NotImplementedError
+        return dx, dh
